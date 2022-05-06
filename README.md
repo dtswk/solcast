@@ -15,6 +15,8 @@ Bearer tolken is the API key which comes from your account page in solcast.
 
 By default it’s scheduled to run every hour.
 
+There is an example dashboard as well as a set of globals created for use within your Node-Red flows
+
 DEPENDANCIES
 
 node-red-contrib-moment – This is used on the dash to provide a nice human statement about when the last URL update was.  You can remove this without impacting anything.
