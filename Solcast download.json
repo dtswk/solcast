@@ -1,0 +1,1214 @@
+[
+    {
+        "id": "c6e1753f802e5da8",
+        "type": "tab",
+        "label": "Solcast",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "29c5c88c5e35da06",
+        "type": "http request",
+        "z": "c6e1753f802e5da8",
+        "name": "SolarForecast",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://api.solcast.com.au/rooftop_sites/<resource-id>/forecasts?format=json&hours=72",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "bearer",
+        "senderr": false,
+        "x": 480,
+        "y": 180,
+        "wires": [
+            [
+                "f65a76176e9dd131",
+                "c81382fa001876e9"
+            ]
+        ]
+    },
+    {
+        "id": "f65a76176e9dd131",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "Solarforecast",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 690,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "d88272138bc4c31c",
+        "type": "inject",
+        "z": "c6e1753f802e5da8",
+        "name": "Get PV Forecast",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "3600",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payloadType": "date",
+        "x": 230,
+        "y": 180,
+        "wires": [
+            [
+                "29c5c88c5e35da06"
+            ]
+        ]
+    },
+    {
+        "id": "193ee9b5f86b2563",
+        "type": "inject",
+        "z": "c6e1753f802e5da8",
+        "name": "Read cache PV Forecast",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "300",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "30",
+        "topic": "",
+        "payloadType": "date",
+        "x": 260,
+        "y": 400,
+        "wires": [
+            [
+                "f866835aad44babf",
+                "96b69b48654fc80a"
+            ]
+        ]
+    },
+    {
+        "id": "1bc841a4b0c71079",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract All",
+        "func": "// add up all the values:\nfor (var i in msg.payload.forecasts) {\n    msg.payload.forecasts[i] = Number(msg.payload.forecasts[i].pv_estimate);\n    }\n        msg.payload.pvtotal = msg.payload.forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nmsg.payload.pvtotal = msg.payload.pvtotal/2;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1000,
+        "y": 380,
+        "wires": [
+            [
+                "fe68be8f09db61f3",
+                "488f446ff16a34c7",
+                "f3c4d443bdcf9c9b"
+            ]
+        ]
+    },
+    {
+        "id": "fe68be8f09db61f3",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "GetPVArray",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1270,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "f866835aad44babf",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "Working",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 520,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "488f446ff16a34c7",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "PVForecast to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "pvforecast",
+                "pt": "global",
+                "to": "payload.pvtotal",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1300,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a7bcc02538495e28",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "PVForecastObject to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "pvobject",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1000,
+        "y": 120,
+        "wires": [
+            [
+                "dd13c7fc9b94e5fe"
+            ]
+        ]
+    },
+    {
+        "id": "aceb03b0541d8887",
+        "type": "json",
+        "z": "c6e1753f802e5da8",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 930,
+        "y": 80,
+        "wires": [
+            [
+                "a0c23e9492571fe7"
+            ]
+        ]
+    },
+    {
+        "id": "a0c23e9492571fe7",
+        "type": "file",
+        "z": "c6e1753f802e5da8",
+        "name": "",
+        "filename": "solarforecast.txt",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 1100,
+        "y": 80,
+        "wires": [
+            [
+                "46e434c99ee79771"
+            ]
+        ]
+    },
+    {
+        "id": "96b69b48654fc80a",
+        "type": "file in",
+        "z": "c6e1753f802e5da8",
+        "name": "",
+        "filename": "solarforecast.txt",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "x": 540,
+        "y": 340,
+        "wires": [
+            [
+                "7d17eb6ce917c778"
+            ]
+        ]
+    },
+    {
+        "id": "7d17eb6ce917c778",
+        "type": "json",
+        "z": "c6e1753f802e5da8",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 710,
+        "y": 340,
+        "wires": [
+            [
+                "c6cfb79dbbe4dbb1",
+                "1bc841a4b0c71079",
+                "288d3550032d180b",
+                "c0f579822b8d909a",
+                "6ad7b82cf0605133",
+                "29753a32b6532691",
+                "97dca6b84dfa01ce",
+                "af0f4a169f3b2d90",
+                "1ffcbdd0b57ee130",
+                "58e18f365ec16b92",
+                "031c5b77e02c21be"
+            ]
+        ]
+    },
+    {
+        "id": "c6cfb79dbbe4dbb1",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "readfile",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 940,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "46e434c99ee79771",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "GetSolcastSuccess",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1310,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "f247f2acd3080a6d",
+        "type": "comment",
+        "z": "c6e1753f802e5da8",
+        "name": "Get Forecast from Solcast",
+        "info": "",
+        "x": 230,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "ce45c7ed7dbbbd48",
+        "type": "comment",
+        "z": "c6e1753f802e5da8",
+        "name": "Check for update every 5 minutes",
+        "info": "",
+        "x": 250,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "f3c4d443bdcf9c9b",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "Write forecasts array to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "individualforecast",
+                "pt": "global",
+                "to": "payload.forecasts",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1330,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "288d3550032d180b",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract 12 hours",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 24; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nset = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1020,
+        "y": 526,
+        "wires": [
+            [
+                "0ee688a2564d6376",
+                "b36cd078b5a4138a"
+            ]
+        ]
+    },
+    {
+        "id": "0ee688a2564d6376",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "12 hour PVForecast to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "pvforecast12",
+                "pt": "global",
+                "to": "payload.pvtotal",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1340,
+        "y": 566,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b36cd078b5a4138a",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "12h PV",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1310,
+        "y": 526,
+        "wires": []
+    },
+    {
+        "id": "c0f579822b8d909a",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract 24 hours",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 48; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nset = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1020,
+        "y": 614,
+        "wires": [
+            [
+                "92226e02b661802b",
+                "3f29ce2e9729e699"
+            ]
+        ]
+    },
+    {
+        "id": "92226e02b661802b",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "24 hour PVForecast to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "pvforecast24",
+                "pt": "global",
+                "to": "payload.pvtotal",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1300,
+        "y": 654,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3f29ce2e9729e699",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "24h PV",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1280,
+        "y": 614,
+        "wires": []
+    },
+    {
+        "id": "6ad7b82cf0605133",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract pessimistic 12 hours",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 24; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nset = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1040,
+        "y": 860,
+        "wires": [
+            [
+                "e86270033a0eaa22",
+                "54e053f062c19b9e"
+            ]
+        ]
+    },
+    {
+        "id": "e86270033a0eaa22",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "12 hour P10 forecast to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "pvforecast12P10",
+                "pt": "global",
+                "to": "payload.pvtotal",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1410,
+        "y": 902,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "54e053f062c19b9e",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "12h PV P10",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1350,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "29753a32b6532691",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract pessimistic 24 hours",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 48; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nset = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1060,
+        "y": 946,
+        "wires": [
+            [
+                "ceaaaab9aaea4c95",
+                "cae9b08088d89387"
+            ]
+        ]
+    },
+    {
+        "id": "ceaaaab9aaea4c95",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "24 hour P10 forecast to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "pvforecast24P10",
+                "pt": "global",
+                "to": "payload.pvtotal",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1410,
+        "y": 989,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "cae9b08088d89387",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "24h PV P10",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1350,
+        "y": 946,
+        "wires": []
+    },
+    {
+        "id": "97dca6b84dfa01ce",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract Day 48",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 49; i < 96; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nset = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1020,
+        "y": 694,
+        "wires": [
+            [
+                "69ce95ae3fc488b3",
+                "32cdc62ac5d14f66"
+            ]
+        ]
+    },
+    {
+        "id": "69ce95ae3fc488b3",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "48 hour PVForecast to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "PVForecast48",
+                "pt": "global",
+                "to": "payload.pvtotal",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1320,
+        "y": 734,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "32cdc62ac5d14f66",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "24h PV",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1300,
+        "y": 694,
+        "wires": []
+    },
+    {
+        "id": "af0f4a169f3b2d90",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract Day 72",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 97; i < 143; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nset = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1020,
+        "y": 774,
+        "wires": [
+            [
+                "e6eba56cf54fe404",
+                "88d2d9b62c68fe73"
+            ]
+        ]
+    },
+    {
+        "id": "e6eba56cf54fe404",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "Day 72 PVForecast to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "PVForecast72",
+                "pt": "global",
+                "to": "payload.pvtotal",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1340,
+        "y": 814,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "88d2d9b62c68fe73",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "24h PV",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1320,
+        "y": 774,
+        "wires": []
+    },
+    {
+        "id": "1ffcbdd0b57ee130",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract P10 Day 2",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 49; i < 96; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nset = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1070,
+        "y": 1035,
+        "wires": [
+            [
+                "64aa203b4f464137",
+                "3f8b74ccafba9125"
+            ]
+        ]
+    },
+    {
+        "id": "64aa203b4f464137",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "Day 2 PVForecast to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "PVForecastD2P10",
+                "pt": "global",
+                "to": "payload.pvtotal",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1360,
+        "y": 1075,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3f8b74ccafba9125",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "24h PV",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1340,
+        "y": 1035,
+        "wires": []
+    },
+    {
+        "id": "58e18f365ec16b92",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract P10 Day 3",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 97; i < 143; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nset = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1070,
+        "y": 1115,
+        "wires": [
+            [
+                "e7b6074d13f19ea6",
+                "793dee2a3998928f"
+            ]
+        ]
+    },
+    {
+        "id": "e7b6074d13f19ea6",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "Day 3 PVForecast to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "PVForecastD3P10",
+                "pt": "global",
+                "to": "payload.pvtotal",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1380,
+        "y": 1155,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "793dee2a3998928f",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "24h PV",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1360,
+        "y": 1115,
+        "wires": []
+    },
+    {
+        "id": "c81382fa001876e9",
+        "type": "switch",
+        "z": "c6e1753f802e5da8",
+        "name": "Check Forecast Status",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "num"
+            },
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 730,
+        "y": 120,
+        "wires": [
+            [
+                "aceb03b0541d8887",
+                "a7bcc02538495e28"
+            ],
+            [
+                "5e46f558db6621c7"
+            ]
+        ]
+    },
+    {
+        "id": "2197686ef7a50128",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "GetSolcastFailed",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1230,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "bd3b26d855ed2473",
+        "type": "inject",
+        "z": "c6e1753f802e5da8",
+        "name": "Read cache PV Forecast",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "30",
+        "topic": "",
+        "payload": "individualforecast",
+        "payloadType": "global",
+        "x": 250,
+        "y": 1240,
+        "wires": [
+            [
+                "f9e6352b98d1eaaa"
+            ]
+        ]
+    },
+    {
+        "id": "1f28eb7b9c53b545",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "Daily Rollup",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1060,
+        "y": 1240,
+        "wires": []
+    },
+    {
+        "id": "f9e6352b98d1eaaa",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract Daily Total",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar x = -1\nvar zeroday = 0\nvar forecasts = []\nvar dailypv = []\nfor (var i in msg.payload) {\n if (msg.payload[i]==0) {\n   zeroday = 0;\n } else if (zeroday==1) {\n    dailypv[x] = dailypv[x] + msg.payload[i]/2;\n }else{\n    zeroday = 1\n    x = x + 1\n    dailypv[x] = 0\n    dailypv[x] = dailypv[x] + msg.payload[i]/2;\n}}\nmsg.payload = dailypv;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 1240,
+        "wires": [
+            [
+                "4878dd1b4cce73a5"
+            ]
+        ]
+    },
+    {
+        "id": "4878dd1b4cce73a5",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "Set Daily Total to Global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "DailyTotal",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 800,
+        "y": 1240,
+        "wires": [
+            [
+                "1f28eb7b9c53b545"
+            ]
+        ]
+    },
+    {
+        "id": "82f8f3adac2bdeb4",
+        "type": "inject",
+        "z": "c6e1753f802e5da8",
+        "name": "Read cache PV Forecast",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "30",
+        "topic": "",
+        "payload": "individualforecastP10",
+        "payloadType": "global",
+        "x": 250,
+        "y": 1280,
+        "wires": [
+            [
+                "fcda0bcd9e547ec1"
+            ]
+        ]
+    },
+    {
+        "id": "c837717139186f2a",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "Daily Rollup",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1060,
+        "y": 1280,
+        "wires": []
+    },
+    {
+        "id": "fcda0bcd9e547ec1",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract DailyP10 Total",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar x = -1\nvar zeroday = 0\nvar forecasts = []\nvar dailypv = []\nfor (var i in msg.payload) {\n if (msg.payload[i]==0) {\n   zeroday = 0;\n } else if (zeroday==1) {\n    dailypv[x] = dailypv[x] + msg.payload[i]/2;\n }else{\n    zeroday = 1\n    x = x + 1\n    dailypv[x] = 0\n    dailypv[x] = dailypv[x] + msg.payload[i]/2;\n}}\nmsg.payload = dailypv;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 510,
+        "y": 1280,
+        "wires": [
+            [
+                "2b06f27f02c9e7f7"
+            ]
+        ]
+    },
+    {
+        "id": "2b06f27f02c9e7f7",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "Set Daily Total to Global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "DailyTotalP10",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 800,
+        "y": 1280,
+        "wires": [
+            [
+                "c837717139186f2a"
+            ]
+        ]
+    },
+    {
+        "id": "bd7319d721ca078a",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "PVForecast to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "pvforecastP10",
+                "pt": "global",
+                "to": "payload.pvtotal",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1300,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c5c6050f03989745",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "Write forecasts array to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "individualforecastP10",
+                "pt": "global",
+                "to": "payload.forecasts",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1330,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "031c5b77e02c21be",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract All P10",
+        "func": "// add up all the values:\nfor (var i in msg.payload.forecasts) {\n    msg.payload.forecasts[i] = Number(msg.payload.forecasts[i].pv_estimate10);\n    }\n        msg.payload.pvtotal = msg.payload.forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nmsg.payload.pvtotal = msg.payload.pvtotal/2;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1020,
+        "y": 480,
+        "wires": [
+            [
+                "bd7319d721ca078a",
+                "c5c6050f03989745"
+            ]
+        ]
+    },
+    {
+        "id": "dd13c7fc9b94e5fe",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "Forecast Status",
+        "rules": [
+            {
+                "t": "set",
+                "p": "SolCastStatus",
+                "pt": "global",
+                "to": "Successful",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "SolCastLastFetch",
+                "pt": "global",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1260,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5e46f558db6621c7",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "Forecast Status",
+        "rules": [
+            {
+                "t": "set",
+                "p": "SolCastStatus",
+                "pt": "global",
+                "to": "payload.response_status.error_code",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "SolCastLastFetch",
+                "pt": "global",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 980,
+        "y": 160,
+        "wires": [
+            [
+                "2197686ef7a50128"
+            ]
+        ]
+    }
+]
