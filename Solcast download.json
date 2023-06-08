@@ -18,8 +18,10 @@
         "tls": "",
         "persist": false,
         "proxy": "",
+        "insecureHTTPParser": false,
         "authType": "bearer",
         "senderr": false,
+        "headers": [],
         "x": 480,
         "y": 180,
         "wires": [
@@ -50,6 +52,7 @@
         "id": "d88272138bc4c31c",
         "type": "inject",
         "z": "c6e1753f802e5da8",
+        "d": true,
         "name": "Get PV Forecast",
         "props": [
             {
@@ -61,6 +64,7 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
+        "payload": "",
         "payloadType": "date",
         "x": 230,
         "y": 180,
@@ -74,6 +78,7 @@
         "id": "193ee9b5f86b2563",
         "type": "inject",
         "z": "c6e1753f802e5da8",
+        "d": true,
         "name": "Read cache PV Forecast",
         "props": [
             {
@@ -95,7 +100,8 @@
         "wires": [
             [
                 "f866835aad44babf",
-                "96b69b48654fc80a"
+                "96b69b48654fc80a",
+                "8c2313ec5533ff53"
             ]
         ]
     },
@@ -109,7 +115,8 @@
         "noerr": 0,
         "initialize": "",
         "finalize": "",
-        "x": 1000,
+        "libs": [],
+        "x": 1160,
         "y": 380,
         "wires": [
             [
@@ -132,7 +139,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1270,
+        "x": 1430,
         "y": 300,
         "wires": []
     },
@@ -150,7 +157,7 @@
         "statusVal": "",
         "statusType": "auto",
         "x": 520,
-        "y": 400,
+        "y": 300,
         "wires": []
     },
     {
@@ -172,7 +179,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1300,
+        "x": 1460,
         "y": 380,
         "wires": [
             []
@@ -201,7 +208,8 @@
         "y": 120,
         "wires": [
             [
-                "dd13c7fc9b94e5fe"
+                "dd13c7fc9b94e5fe",
+                "8c2313ec5533ff53"
             ]
         ]
     },
@@ -225,32 +233,34 @@
         "id": "a0c23e9492571fe7",
         "type": "file",
         "z": "c6e1753f802e5da8",
+        "d": true,
         "name": "",
-        "filename": "solarforecast.txt",
+        "filename": "/data/home/nodered/solarforecast.txt",
+        "filenameType": "str",
         "appendNewline": true,
         "createDir": false,
         "overwriteFile": "true",
         "encoding": "none",
-        "x": 1100,
+        "x": 1260,
         "y": 80,
         "wires": [
-            [
-                "46e434c99ee79771"
-            ]
+            []
         ]
     },
     {
         "id": "96b69b48654fc80a",
         "type": "file in",
         "z": "c6e1753f802e5da8",
+        "d": true,
         "name": "",
-        "filename": "solarforecast.txt",
+        "filename": "/data/home/nodered/solarforecast.txt",
         "format": "utf8",
         "chunk": false,
         "sendError": false,
         "encoding": "none",
-        "x": 540,
-        "y": 340,
+        "allProps": false,
+        "x": 610,
+        "y": 360,
         "wires": [
             [
                 "7d17eb6ce917c778"
@@ -261,26 +271,15 @@
         "id": "7d17eb6ce917c778",
         "type": "json",
         "z": "c6e1753f802e5da8",
+        "d": true,
         "name": "",
         "property": "payload",
         "action": "",
         "pretty": false,
-        "x": 710,
-        "y": 340,
+        "x": 790,
+        "y": 300,
         "wires": [
-            [
-                "c6cfb79dbbe4dbb1",
-                "1bc841a4b0c71079",
-                "288d3550032d180b",
-                "c0f579822b8d909a",
-                "6ad7b82cf0605133",
-                "29753a32b6532691",
-                "97dca6b84dfa01ce",
-                "af0f4a169f3b2d90",
-                "1ffcbdd0b57ee130",
-                "58e18f365ec16b92",
-                "031c5b77e02c21be"
-            ]
+            []
         ]
     },
     {
@@ -296,7 +295,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 940,
+        "x": 1100,
         "y": 340,
         "wires": []
     },
@@ -313,8 +312,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1310,
-        "y": 80,
+        "x": 1490,
+        "y": 120,
         "wires": []
     },
     {
@@ -356,7 +355,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1330,
+        "x": 1490,
         "y": 340,
         "wires": [
             []
@@ -367,12 +366,13 @@
         "type": "function",
         "z": "c6e1753f802e5da8",
         "name": "Extract 12 hours",
-        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 24; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 24; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\n//msg.payload.forecasts = forecasts;\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
-        "x": 1020,
+        "libs": [],
+        "x": 1180,
         "y": 526,
         "wires": [
             [
@@ -400,7 +400,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1340,
+        "x": 1500,
         "y": 566,
         "wires": [
             []
@@ -419,7 +419,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1310,
+        "x": 1470,
         "y": 526,
         "wires": []
     },
@@ -428,12 +428,13 @@
         "type": "function",
         "z": "c6e1753f802e5da8",
         "name": "Extract 24 hours",
-        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 48; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 48; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\n//set = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
-        "x": 1020,
+        "libs": [],
+        "x": 1180,
         "y": 614,
         "wires": [
             [
@@ -461,7 +462,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1300,
+        "x": 1460,
         "y": 654,
         "wires": [
             []
@@ -480,7 +481,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1280,
+        "x": 1440,
         "y": 614,
         "wires": []
     },
@@ -489,12 +490,13 @@
         "type": "function",
         "z": "c6e1753f802e5da8",
         "name": "Extract pessimistic 12 hours",
-        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 24; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 24; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\n//set = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
-        "x": 1040,
+        "libs": [],
+        "x": 1200,
         "y": 860,
         "wires": [
             [
@@ -522,7 +524,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1410,
+        "x": 1570,
         "y": 902,
         "wires": [
             []
@@ -541,7 +543,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1350,
+        "x": 1510,
         "y": 860,
         "wires": []
     },
@@ -550,12 +552,13 @@
         "type": "function",
         "z": "c6e1753f802e5da8",
         "name": "Extract pessimistic 24 hours",
-        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 48; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 0; i < 48; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\n//set = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
-        "x": 1060,
+        "libs": [],
+        "x": 1220,
         "y": 946,
         "wires": [
             [
@@ -583,7 +586,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1410,
+        "x": 1570,
         "y": 989,
         "wires": [
             []
@@ -602,7 +605,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1350,
+        "x": 1510,
         "y": 946,
         "wires": []
     },
@@ -611,12 +614,13 @@
         "type": "function",
         "z": "c6e1753f802e5da8",
         "name": "Extract Day 48",
-        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 49; i < 96; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 49; i < 96; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\n//set = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
-        "x": 1020,
+        "libs": [],
+        "x": 1180,
         "y": 694,
         "wires": [
             [
@@ -644,7 +648,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1320,
+        "x": 1480,
         "y": 734,
         "wires": [
             []
@@ -663,7 +667,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1300,
+        "x": 1460,
         "y": 694,
         "wires": []
     },
@@ -672,12 +676,13 @@
         "type": "function",
         "z": "c6e1753f802e5da8",
         "name": "Extract Day 72",
-        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 97; i < 143; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 97; i < 143; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\n//set = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
-        "x": 1020,
+        "libs": [],
+        "x": 1180,
         "y": 774,
         "wires": [
             [
@@ -705,7 +710,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1340,
+        "x": 1500,
         "y": 814,
         "wires": [
             []
@@ -724,7 +729,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1320,
+        "x": 1480,
         "y": 774,
         "wires": []
     },
@@ -733,12 +738,13 @@
         "type": "function",
         "z": "c6e1753f802e5da8",
         "name": "Extract P10 Day 2",
-        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 49; i < 96; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 49; i < 96; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\n//set = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
-        "x": 1070,
+        "libs": [],
+        "x": 1230,
         "y": 1035,
         "wires": [
             [
@@ -766,7 +772,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1360,
+        "x": 1520,
         "y": 1075,
         "wires": [
             []
@@ -785,7 +791,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1340,
+        "x": 1500,
         "y": 1035,
         "wires": []
     },
@@ -794,12 +800,13 @@
         "type": "function",
         "z": "c6e1753f802e5da8",
         "name": "Extract P10 Day 3",
-        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 97; i < 143; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
+        "func": "// add up all the values:\nvar pvtotal = 0\nvar forecasts = []\nfor (var i = 97; i < 143; i++) {\n    forecasts[i] = msg.payload.forecasts[i].pv_estimate10;\n    }\n        pvtotal = forecasts.reduce(function(a, b){\n        return a + b;\n    }, 0);\n// halve the value due to a reading every 30 minutes:\n//set = msg.payload.forecasts = forecasts\nmsg.payload.pvtotal = pvtotal/2;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
-        "x": 1070,
+        "libs": [],
+        "x": 1230,
         "y": 1115,
         "wires": [
             [
@@ -827,7 +834,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1380,
+        "x": 1540,
         "y": 1155,
         "wires": [
             []
@@ -846,7 +853,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1360,
+        "x": 1520,
         "y": 1115,
         "wires": []
     },
@@ -876,8 +883,8 @@
         "y": 120,
         "wires": [
             [
-                "aceb03b0541d8887",
-                "a7bcc02538495e28"
+                "a7bcc02538495e28",
+                "aceb03b0541d8887"
             ],
             [
                 "5e46f558db6621c7"
@@ -897,184 +904,9 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1230,
+        "x": 1310,
         "y": 160,
         "wires": []
-    },
-    {
-        "id": "bd3b26d855ed2473",
-        "type": "inject",
-        "z": "c6e1753f802e5da8",
-        "name": "Read cache PV Forecast",
-        "props": [
-            {
-                "p": "payload"
-            }
-        ],
-        "repeat": "10",
-        "crontab": "",
-        "once": false,
-        "onceDelay": "30",
-        "topic": "",
-        "payload": "individualforecast",
-        "payloadType": "global",
-        "x": 250,
-        "y": 1240,
-        "wires": [
-            [
-                "f9e6352b98d1eaaa"
-            ]
-        ]
-    },
-    {
-        "id": "1f28eb7b9c53b545",
-        "type": "debug",
-        "z": "c6e1753f802e5da8",
-        "name": "Daily Rollup",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1060,
-        "y": 1240,
-        "wires": []
-    },
-    {
-        "id": "f9e6352b98d1eaaa",
-        "type": "function",
-        "z": "c6e1753f802e5da8",
-        "name": "Extract Daily Total",
-        "func": "// add up all the values:\nvar pvtotal = 0\nvar x = -1\nvar zeroday = 0\nvar forecasts = []\nvar dailypv = []\nfor (var i in msg.payload) {\n if (msg.payload[i]==0) {\n   zeroday = 0;\n } else if (zeroday==1) {\n    dailypv[x] = dailypv[x] + msg.payload[i]/2;\n }else{\n    zeroday = 1\n    x = x + 1\n    dailypv[x] = 0\n    dailypv[x] = dailypv[x] + msg.payload[i]/2;\n}}\nmsg.payload = dailypv;\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 500,
-        "y": 1240,
-        "wires": [
-            [
-                "4878dd1b4cce73a5"
-            ]
-        ]
-    },
-    {
-        "id": "4878dd1b4cce73a5",
-        "type": "change",
-        "z": "c6e1753f802e5da8",
-        "name": "Set Daily Total to Global",
-        "rules": [
-            {
-                "t": "set",
-                "p": "DailyTotal",
-                "pt": "global",
-                "to": "payload",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 800,
-        "y": 1240,
-        "wires": [
-            [
-                "1f28eb7b9c53b545"
-            ]
-        ]
-    },
-    {
-        "id": "82f8f3adac2bdeb4",
-        "type": "inject",
-        "z": "c6e1753f802e5da8",
-        "name": "Read cache PV Forecast",
-        "props": [
-            {
-                "p": "payload"
-            }
-        ],
-        "repeat": "10",
-        "crontab": "",
-        "once": false,
-        "onceDelay": "30",
-        "topic": "",
-        "payload": "individualforecastP10",
-        "payloadType": "global",
-        "x": 250,
-        "y": 1280,
-        "wires": [
-            [
-                "fcda0bcd9e547ec1"
-            ]
-        ]
-    },
-    {
-        "id": "c837717139186f2a",
-        "type": "debug",
-        "z": "c6e1753f802e5da8",
-        "name": "Daily Rollup",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1060,
-        "y": 1280,
-        "wires": []
-    },
-    {
-        "id": "fcda0bcd9e547ec1",
-        "type": "function",
-        "z": "c6e1753f802e5da8",
-        "name": "Extract DailyP10 Total",
-        "func": "// add up all the values:\nvar pvtotal = 0\nvar x = -1\nvar zeroday = 0\nvar forecasts = []\nvar dailypv = []\nfor (var i in msg.payload) {\n if (msg.payload[i]==0) {\n   zeroday = 0;\n } else if (zeroday==1) {\n    dailypv[x] = dailypv[x] + msg.payload[i]/2;\n }else{\n    zeroday = 1\n    x = x + 1\n    dailypv[x] = 0\n    dailypv[x] = dailypv[x] + msg.payload[i]/2;\n}}\nmsg.payload = dailypv;\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "x": 510,
-        "y": 1280,
-        "wires": [
-            [
-                "2b06f27f02c9e7f7"
-            ]
-        ]
-    },
-    {
-        "id": "2b06f27f02c9e7f7",
-        "type": "change",
-        "z": "c6e1753f802e5da8",
-        "name": "Set Daily Total to Global",
-        "rules": [
-            {
-                "t": "set",
-                "p": "DailyTotalP10",
-                "pt": "global",
-                "to": "payload",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 800,
-        "y": 1280,
-        "wires": [
-            [
-                "c837717139186f2a"
-            ]
-        ]
     },
     {
         "id": "bd7319d721ca078a",
@@ -1095,7 +927,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1300,
+        "x": 1460,
         "y": 480,
         "wires": [
             []
@@ -1120,7 +952,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1330,
+        "x": 1490,
         "y": 440,
         "wires": [
             []
@@ -1136,7 +968,8 @@
         "noerr": 0,
         "initialize": "",
         "finalize": "",
-        "x": 1020,
+        "libs": [],
+        "x": 1180,
         "y": 480,
         "wires": [
             [
@@ -1174,7 +1007,9 @@
         "x": 1260,
         "y": 120,
         "wires": [
-            []
+            [
+                "46e434c99ee79771"
+            ]
         ]
     },
     {
@@ -1207,8 +1042,299 @@
         "y": 160,
         "wires": [
             [
-                "2197686ef7a50128"
+                "2197686ef7a50128",
+                "6d89624635a65fec"
             ]
+        ]
+    },
+    {
+        "id": "8c2313ec5533ff53",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "PVForecastObject to global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "state",
+                "pt": "msg",
+                "to": "extract globals",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 760,
+        "y": 520,
+        "wires": [
+            [
+                "c6cfb79dbbe4dbb1",
+                "1bc841a4b0c71079",
+                "031c5b77e02c21be",
+                "288d3550032d180b",
+                "c0f579822b8d909a",
+                "97dca6b84dfa01ce",
+                "af0f4a169f3b2d90",
+                "6ad7b82cf0605133",
+                "29753a32b6532691",
+                "1ffcbdd0b57ee130",
+                "58e18f365ec16b92"
+            ]
+        ]
+    },
+    {
+        "id": "c625daaf84855569",
+        "type": "cronplus",
+        "z": "c6e1753f802e5da8",
+        "name": "Every 60 min between 4am to 10pm",
+        "outputField": "payload",
+        "timeZone": "Australia/Sydney",
+        "persistDynamic": false,
+        "commandResponseMsgOutput": "output1",
+        "outputs": 1,
+        "options": [
+            {
+                "name": "schedule1",
+                "topic": "schedule1",
+                "payloadType": "default",
+                "payload": "",
+                "expressionType": "cron",
+                "expression": "0 0/30 3-23 * * ? *",
+                "location": "",
+                "offset": "0",
+                "solarType": "all",
+                "solarEvents": "sunrise,sunset"
+            }
+        ],
+        "x": 230,
+        "y": 260,
+        "wires": [
+            [
+                "29c5c88c5e35da06"
+            ]
+        ]
+    },
+    {
+        "id": "6d89624635a65fec",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Format email",
+        "func": "msg.topic = 'Solcast failed';\nvar emailL1 = 'Solcase failed' + \"\\n\";\nvar emailL2 = 'Error code ' + msg.statusCode + \"\\n\";\nvar emailL3 = 'Error ' + msg.payload.response_status.error_code + \"\\n\";\nvar emailL4 = 'Cry' + \"\\n\";\nvar emailL5 = 'Check the details http://' + global.get(\"IPLocal\") + ':1880/ui/';\nmsg.payload = emailL1 + emailL2 + emailL3 + emailL4 + emailL5;\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1190,
+        "y": 220,
+        "wires": [
+            [
+                "92ec5dadbd51b4aa"
+            ]
+        ]
+    },
+    {
+        "id": "92ec5dadbd51b4aa",
+        "type": "e-mail",
+        "z": "c6e1753f802e5da8",
+        "server": "smtp.gmail.com",
+        "port": "465",
+        "secure": true,
+        "tls": false,
+        "name": "matt.taet@gmail.com",
+        "dname": "",
+        "x": 1400,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "194fb3e51101e15f",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract Daily Total",
+        "func": "//This takes the array of forecasts and splits into days throwing away any data that is old\nvar x = -1;\nvar zeroday = 0;\nvar forecasts = msg.payload.forecasts;\nvar dailypv = [];\n\nvar d1 = new Date(); // Current date\nvar d2 = new Date(); // Date from forecasts\n\nfor (var i in forecasts) {\n  d2 = new Date(forecasts[i].period_end);\n  \n  if (forecasts[i].pv_estimate === 0) {\n    zeroday = 0; // Reset zeroday flag if pv_estimate is 0 as this is a new day\n  } else if (zeroday === 1) {\n    if (d2 >= d1) {\n      dailypv[x] += forecasts[i].pv_estimate / 2; // This is more data to be added to the same day\n    }\n  } else {\n    if (d2 >= d1) {\n      zeroday = 1; // This is the first occurance of a new day\n      x++; // Increment x to move to the next day's total\n      dailypv[x] = 0; // Initialize the current day's total\n      dailypv[x] += forecasts[i].pv_estimate / 2; // As the solcast data is per 30 minutes add half of pv_estimate to the current day's total\n    }\n  }\n}\n\nmsg.payload = dailypv; // Update payload with the daily pv totals\nmsg.pvforecast12 = dailypv[0]; // Set pvforecast12 to the first day's total\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 1100,
+        "wires": [
+            [
+                "688f156a4930939d",
+                "7211cdb185cd61ed"
+            ]
+        ]
+    },
+    {
+        "id": "5b2102f98409162f",
+        "type": "inject",
+        "z": "c6e1753f802e5da8",
+        "name": "Create daily and summary forecast",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "300",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "pvobject",
+        "payloadType": "global",
+        "x": 270,
+        "y": 1100,
+        "wires": [
+            [
+                "194fb3e51101e15f"
+            ]
+        ]
+    },
+    {
+        "id": "688f156a4930939d",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "New PV Daily",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "25c2a935f2aa91c6",
+        "type": "function",
+        "z": "c6e1753f802e5da8",
+        "name": "Extract DailyP10 Total",
+        "func": "//This takes the array of forecasts and splits into days throwing away any data that is old\nvar x = -1;\nvar zeroday = 0;\nvar forecasts = msg.payload.forecasts;\nvar dailypv = [];\n\nvar d1 = new Date(); // Current date\nvar d2 = new Date(); // Date from forecasts\n\nfor (var i in forecasts) {\n  d2 = new Date(forecasts[i].period_end);\n  \n  if (forecasts[i].pv_estimate10 === 0) {\n    zeroday = 0; // Reset zeroday flag if pv_estimate is 0 as this is a new day\n  } else if (zeroday === 1) {\n    if (d2 >= d1) {\n      dailypv[x] += forecasts[i].pv_estimate10 / 2; // This is more data to be added to the same day\n    }\n  } else {\n    if (d2 >= d1) {\n      zeroday = 1; // This is the first occurance of a new day\n      x++; // Increment x to move to the next day's total\n      dailypv[x] = 0; // Initialize the current day's total\n      dailypv[x] += forecasts[i].pv_estimate10 / 2; // As the solcast data is per 30 minutes add half of pv_estimate to the current day's total\n    }\n  }\n}\n\nmsg.payload = dailypv; // Update payload with the daily pv totals\nmsg.pvforecast1210 = dailypv[0]; // Set pvforecast12 to the first day's total\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 1140,
+        "wires": [
+            [
+                "84e836848e9c5889",
+                "3c8d7b0e041d2912"
+            ]
+        ]
+    },
+    {
+        "id": "f8703dbe4b37e3dc",
+        "type": "inject",
+        "z": "c6e1753f802e5da8",
+        "name": "Create daily and summary P10 forecast",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "300",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "pvobject",
+        "payloadType": "global",
+        "x": 280,
+        "y": 1140,
+        "wires": [
+            [
+                "25c2a935f2aa91c6"
+            ]
+        ]
+    },
+    {
+        "id": "84e836848e9c5889",
+        "type": "debug",
+        "z": "c6e1753f802e5da8",
+        "name": "New PV10 Daily",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 1180,
+        "wires": []
+    },
+    {
+        "id": "7211cdb185cd61ed",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "Set Daily Total to Global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "DailyTotal",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "pvforecast12",
+                "pt": "global",
+                "to": "pvforecast12",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 850,
+        "y": 1100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3c8d7b0e041d2912",
+        "type": "change",
+        "z": "c6e1753f802e5da8",
+        "name": "Set Daily Total to Global",
+        "rules": [
+            {
+                "t": "set",
+                "p": "DailyTotalP10",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "pvforecast12P10",
+                "pt": "global",
+                "to": "pvforecast12P10",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 850,
+        "y": 1140,
+        "wires": [
+            []
         ]
     }
 ]
